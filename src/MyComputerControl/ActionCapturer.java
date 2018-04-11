@@ -7,6 +7,7 @@ import java.io.IOException;
 
 public class ActionCapturer implements Runnable {
     String filePath;
+    boolean ignoreMouseMove;
     @Override
     public void run() {
 
@@ -17,11 +18,10 @@ public class ActionCapturer implements Runnable {
         }
         System.out.println("Thread " +  this.toString() + " exiting.");
     }
-    public ActionCapturer(String filePath)
+    public ActionCapturer(String filePath, boolean ignoreMouseMove)
     {
-        //new File("/Akcje/").mkdirs();
-
         this.filePath = "./Akcje/" + filePath;
+        this.ignoreMouseMove = ignoreMouseMove;
     }
     public void startListening() throws IOException {
         try {
@@ -34,12 +34,12 @@ public class ActionCapturer implements Runnable {
             System.exit(1);
         }
 
-        // Construct the example object.
         GlobalMouseListener myMouseListener = new GlobalMouseListener(this.filePath);
 
         // Add the appropriate listeners.
         GlobalScreen.addNativeMouseListener(myMouseListener);
-        GlobalScreen.addNativeMouseMotionListener(myMouseListener);
+        if(ignoreMouseMove == false) GlobalScreen.addNativeMouseMotionListener(myMouseListener);
+
 
         GlobalScreen.addNativeKeyListener(new GlobalKeyListener(this.filePath));
 

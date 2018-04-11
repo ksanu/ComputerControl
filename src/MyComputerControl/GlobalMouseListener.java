@@ -30,7 +30,7 @@ public class GlobalMouseListener implements NativeMouseInputListener {
     public void nativeMousePressed(NativeMouseEvent e) {
         System.out.println("Mouse Pressed: " + e.getButton());
         Charset utf8 = StandardCharsets.UTF_8;
-        List<String> lines = Arrays.asList("MOUSEPRESSED " + e.getButton());
+        List<String> lines = Arrays.asList("MOUSEPRESSED\t" + e.getButton());
 
         try {
             Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -42,7 +42,7 @@ public class GlobalMouseListener implements NativeMouseInputListener {
     public void nativeMouseReleased(NativeMouseEvent e) {
         System.out.println("Mouse Released: " + e.getButton());
         Charset utf8 = StandardCharsets.UTF_8;
-        List<String> lines = Arrays.asList("MOUSERELEASED " + e.getButton());
+        List<String> lines = Arrays.asList("MOUSERELEASED\t" + e.getButton());
 
         try {
             Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -54,7 +54,7 @@ public class GlobalMouseListener implements NativeMouseInputListener {
     public void nativeMouseMoved(NativeMouseEvent e) {
         System.out.println("Mouse Moved: " + e.getX() + ", " + e.getY());
         Charset utf8 = StandardCharsets.UTF_8;
-        List<String> lines = Arrays.asList("MOUSEMOVED " + + e.getX() + " " + e.getY());
+        List<String> lines = Arrays.asList("MOUSEMOVED\t" + e.getX() + "\t" + e.getY());
 
         try {
             Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
