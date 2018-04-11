@@ -12,9 +12,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -24,6 +24,8 @@ import javafx.stage.Stage;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +34,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 public class MyGUI{
@@ -46,7 +50,7 @@ public class MyGUI{
        this.wasStarted = false;
     }
 
-    public void loginStage()
+       public void loginStage()
     {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -79,14 +83,36 @@ public class MyGUI{
         final Text actiontarget = new Text();
         grid.add(actiontarget, 1, 6);
 
+        btn.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                actiontarget.setFill(Color.GREEN);
+                actiontarget.setText("Logowanie...");
+            }
+        });
         btn.setOnAction(new EventHandler<ActionEvent>() {
-
             @Override
             public void handle(ActionEvent e) {
-                actiontarget.setFill(Color.FIREBRICK);
-                actiontarget.setText("Logowanie...");
-                //TODO: logowanie - Backend
-                mainStage();
+                String currentPw = pwBox.getText();
+                String filePath = "./conf";
+                Charset utf8 = StandardCharsets.UTF_8;
+                try {
+                    //Sprawdzenie, czy hasło się zgadza:
+                    List<String> allLines = Files.readAllLines(Paths.get(filePath), utf8);
+                    String storedPw = allLines.get(0);
+                    if(PasswordHandler.check(currentPw, storedPw))
+                    {
+                        mainStage();
+                    }else{
+                        actiontarget.setFill(Color.RED);
+                        actiontarget.setText("Nieprawidłowe hasło.");
+                    }
+                }catch (Exception exc)
+                {
+                    exc.printStackTrace();
+                    actiontarget.setFill(Color.RED);
+                    actiontarget.setText(exc.getMessage());
+                }
 
             }
         });
@@ -95,6 +121,107 @@ public class MyGUI{
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
+    public void changePasswordStage()
+    {
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+
+        Text scenetitle = new Text("Zmień hasło");
+        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+        grid.add(scenetitle, 0, 0, 2, 1);
+
+        //Label userName = new Label("User Name:");
+        //grid.add(userName, 0, 1);
+
+        //TextField userTextField = new TextField();
+        // grid.add(userTextField, 1, 1);
+
+        Label oldPw = new Label("Poprzednie hasło:");
+        grid.add(oldPw, 0, 2);
+
+        PasswordField oldPwBox = new PasswordField();
+        grid.add(oldPwBox, 1, 2);
+
+        Label newPw = new Label("Nowe hasło:");
+        grid.add(newPw, 0, 3);
+
+        PasswordField newPwBox = new PasswordField();
+        grid.add(newPwBox, 1, 3);
+
+        Button btn = new Button("Zmień hasło");
+        HBox hbBtn = new HBox(10);
+        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
+        hbBtn.getChildren().add(btn);
+        grid.add(hbBtn, 1, 5);
+
+        Button cancelBtn = new Button("Powrót");
+        HBox hbCancelBtn = new HBox(10);
+        hbCancelBtn.setAlignment(Pos.BOTTOM_LEFT);
+        hbCancelBtn.getChildren().add(cancelBtn);
+        grid.add(hbCancelBtn, 0, 5);
+        cancelBtn.setOnAction(event -> {
+            mainStage();
+        });
+        
+        final Text actiontarget = new Text();
+        grid.add(actiontarget, 1, 6);
+
+        btn.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                actiontarget.setFill(Color.GREEN);
+                actiontarget.setText("Zmiana hasła...");
+            }
+        });
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent e) {
+                //zmiana hasła
+                String oldPw = oldPwBox.getText();
+                String newPw = newPwBox.getText();
+                String filePath = "./conf";
+                Charset utf8 = StandardCharsets.UTF_8;
+                try {
+                    List<String> allLines = Files.readAllLines(Paths.get(filePath), utf8);
+                    String storedPw = allLines.get(0);
+                    //Sprawdzenie, czy stare hasło się zgadza:
+                    if(PasswordHandler.check(oldPw, storedPw)){
+                        String hashedNewPassword = PasswordHandler.getSaltedHash(newPw);
+                        //usunięcie białych znaków
+                        hashedNewPassword = hashedNewPassword.replaceAll("\\s+","");
+                        List<String> lines = Arrays.asList(hashedNewPassword);
+                        //zapisanie zhaszowanego hasła
+                        Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                        mainStage();
+                    }else {
+                        actiontarget.setFill(Color.RED);
+                        actiontarget.setText("Poprzednie hasło jest błędne.");
+                    }
+
+
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                    actiontarget.setFill(Color.RED);
+                    actiontarget.setText(ex.getMessage());
+                }
+
+            }
+        });
+
+        Scene scene = new Scene(grid, 450, 275);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+
 
     private ObservableList<String> getActionsList()
     {
@@ -122,8 +249,6 @@ public class MyGUI{
         final Text infoText = new Text();
         infoText.setWrappingWidth(150);
         grid.add(infoText, 0, 4);
-
-        //TODO: przycisk - dodanie nowej akcji
 
         Button newActionCaptureBtn = new Button("Dodaj automatyczną akcję");
         HBox hbNewActionCaptureBtn = new HBox(10);
@@ -227,7 +352,6 @@ public class MyGUI{
 
             }
         });
-        //TODO: Stan połączenia z pilotem
         Button remoteBtn = new Button("Włącz tryb zdalny");
         HBox hbRemoteBtn = new HBox(10);
         hbRemoteBtn.setAlignment(Pos.BOTTOM_RIGHT);
@@ -241,6 +365,21 @@ public class MyGUI{
             public void handle(ActionEvent e) {
                 remoteConnectionStage();
 
+            }
+        });
+
+        Button changePwBtn = new Button("Zmień hasło");
+        HBox hbChangePwBtn = new HBox(10);
+        hbChangePwBtn.setAlignment(Pos.BOTTOM_RIGHT);
+        hbChangePwBtn.getChildren().add(changePwBtn);
+
+        grid.add(hbChangePwBtn, 0, 2, 2, 1);
+
+        changePwBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent e) {
+                changePasswordStage();
             }
         });
         //Label userName = new Label("User Name:");
@@ -608,20 +747,5 @@ public class MyGUI{
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-    /*
-    @Override
-    public void onHotKey(int aIdentifier)
-    {
-        if (aIdentifier == 1) {
-            System.out.println("f11 hotkey pressed");
-            this.keyPressed = 122;
 
-        }
-        if (aIdentifier == 2){
-            System.out.println("esc hotkey pressed");
-            this.keyPressed = 27;
-
-        }
-    }
-    */
 }

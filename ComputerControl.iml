@@ -10,5 +10,25 @@
     <orderEntry type="library" name="jnativehook-2.1.0" level="project" />
     <orderEntry type="library" name="jintellitype-1.3.9" level="project" />
     <orderEntry type="library" name="bluecove-2.1.1" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/commons-codec-1.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="commons-codec-1.4" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/commons-codec-1.4_2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="apache-commons-codec-1.4" level="project" />
   </component>
 </module>
