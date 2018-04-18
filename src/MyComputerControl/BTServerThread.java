@@ -52,6 +52,10 @@ public class BTServerThread implements Runnable {
                     device = waitForConnection(myStreamConnecrionNotifier);
                     if (device != null) {
                         btState = BTStates.btConnectedWithDevice;
+                        sendInfo("Połączono ze zdalnym urządzeniem:\n" + "Adres urządzenia: " + device.getBluetoothAddress() +
+                                "\nNazwa urządzenia: " + device.getFriendlyName(true));
+                        //mamy połączenie, można nawiązać komunikację
+                        openIOStreams();
                     }else {
                     sendInfo("Błąd, nie można połączyć ze zdalnym urządzeniem");
                     }
@@ -59,11 +63,6 @@ public class BTServerThread implements Runnable {
                 if(btState.equals(BTStates.btConnectedWithDevice)) {
                     //mamy połączenie ze zdalnym urządzeniem
                     try {
-                        sendInfo("Połączono ze zdalnym urządzeniem:\n" + "Adres urządzenia: " + device.getBluetoothAddress() +
-                                "\nNazwa urządzenia: " + device.getFriendlyName(true));
-
-                        //mamy połączenie, można nawiązać komunikację
-                        openIOStreams();
                         //mając IO streams możemy odbierać i wysyłać komunikaty:
                         //test:
                         sendLineToRemote("hello");
@@ -145,12 +144,13 @@ public class BTServerThread implements Runnable {
             if(currentDiscoverableMode != DiscoveryAgent.GIAC) {
                 local.setDiscoverable(DiscoveryAgent.GIAC);
             }
-            //java.util.UUID myUUID = java.util.UUID.fromString("f2444d82-48d7-4d5a-b885-6992f20db093");
 
-            UUID uuid = new UUID(2101994); //unikalny identyfikator mojej usługi bluetooth
+            UUID uuid = new UUID(145554050); //unikalny identyfikator mojej usługi bluetooth
+                                                    // "08acfa82-0000-1000-8000-00805f9b34fb"
 
             String url = "btspp://localhost:" + uuid.toString() + ";name=RemoteBluetooth";
             notifier = (StreamConnectionNotifier) Connector.open(url);
+            System.out.println(uuid.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
