@@ -36,6 +36,15 @@ public class PasswordHandler {
         return hashOfInput.equals(saltAndPass[1]);
     }
 
+    public static String getStoredSalt(String stored)
+    {
+        String[] saltAndPass = stored.split("\\$");
+        if (saltAndPass.length != 2) {
+            throw new IllegalStateException(
+                    "The stored password have the form 'salt$hash'");
+        }
+        return saltAndPass[0];
+    }
     // using PBKDF2 from Sun, an alternative is https://github.com/wg/scrypt
     // cf. http://www.unlimitednovelty.com/2012/03/dont-use-bcrypt.html
     private static String hash(String password, byte[] salt) throws Exception {

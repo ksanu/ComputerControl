@@ -10,6 +10,10 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class BTServerThread implements Runnable {
     TextArea infoText;
@@ -64,12 +68,17 @@ public class BTServerThread implements Runnable {
                     //mamy połączenie ze zdalnym urządzeniem
                     try {
                         //mając IO streams możemy odbierać i wysyłać komunikaty:
-                        //test:
-                        sendLineToRemote("hello");
-                        sendInfo(readLineFromRemote());
+                        String messageLine = readLineFromRemote();
+                        System.out.println(messageLine);
+                        if(messageLine!=null) handleMessage(messageLine);
+                        else {
+                            sendInfo("...przerwano połączenie...");
+                             btState = BTStates.btWaitingForConnection;
+
+                        }
 
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        sendInfo("...przerwano połączenie...");
                         btState = BTStates.btWaitingForConnection;
                     }
 
@@ -79,6 +88,7 @@ public class BTServerThread implements Runnable {
 
             } catch (Exception e) {
                 e.printStackTrace();
+                break;
             }
 
         }
@@ -98,6 +108,73 @@ public class BTServerThread implements Runnable {
             sendInfo("Błąd przy zamykaniu serwera");
         }
     }
+
+    private void sendPasswordSalt()
+    {
+        try {
+            List<String> allLines = Files.readAllLines(Paths.get(MyGUI.confFilePath), StandardCharsets.UTF_8);
+            String storedPw = allLines.get(0);
+            String salt = PasswordHandler.getStoredSalt(storedPw);
+            sendMessage(MessageTypes.Server.PASSWORD_SALT, salt);
+
+        }catch (IOException e)
+        {
+            sendInfo("Nie można odczytać pliku conf.");
+        }
+    }
+
+    private void sendAuthorizationResult(String pwHash)
+    {
+        try {
+            List<String> allLines = Files.readAllLines(Paths.get(MyGUI.confFilePath), StandardCharsets.UTF_8);
+            String stored = allLines.get(0);
+            String[] saltAndPass = stored.split("\\$");
+
+            String result = MessageContent.AUTHORIZATION_RESULT.FAILURE;
+            if(pwHash.equals(saltAndPass[1])) result = MessageContent.AUTHORIZATION_RESULT.SUCCESS;
+            sendMessage(MessageTypes.Server.AUTHORIZATION_RESULT, result);
+        }catch (IOException e)
+        {
+            sendInfo("Nie można odczytać pliku conf.");
+        }catch (Exception e)
+        {
+            sendInfo(e.getMessage());
+        }
+    }
+
+    public void handleMessage(String messageLine){
+        String[] msgTypeAndContent = messageLine.split("\\t");
+        switch(msgTypeAndContent[0])
+        {
+            case MessageTypes.Client.GET_PASSWORD_SALT:
+                sendPasswordSalt();
+                break;
+            case MessageTypes.Client.AUTHORIZE_PASSWORD_HASH:
+                sendAuthorizationResult(msgTypeAndContent[1]);
+                break;
+            case MessageTypes.Client.CLIENT_STATE:
+                if(msgTypeAndContent[1].equals(MessageContent.STATE.READY_FOR_REMOTE_CONTROL)){
+                    sendMessage(MessageTypes.Server.SERVER_STATE, MessageContent.STATE.READY_FOR_REMOTE_CONTROL);
+                }
+                if(msgTypeAndContent[1].equals(MessageContent.STATE.CLOSING)){
+                    sendInfo("Zdalny pilot kończy połączenie.");
+                }
+                break;
+            //RemoteControl
+            case MessageTypes.Client.EXECUTE_ACTION:
+
+                break;
+            case MessageTypes.Client.EXECUTE_KEY_PRESS:
+
+                break;
+            case MessageTypes.Client.EXECUTE_MOUSE_ACTION:
+
+                break;
+            default:
+                break;
+        }
+
+    }
     public synchronized void stopBTServer()
     {
         btState = BTStates.btEND;
@@ -115,9 +192,10 @@ public class BTServerThread implements Runnable {
         String receivedLine = myBlueroothConnectionReader.readLine();
         return receivedLine;
     }
-    public void sendLineToRemote(String line)
+    public void sendMessage(String messageType, String messageContent)
     {
-        myBluetoorhConnectionWriter.write(line + "\n");
+        String msgLine = messageType + "\t" + messageContent + "\n";
+        myBluetoorhConnectionWriter.write(msgLine);
         myBluetoorhConnectionWriter.flush();
     }
 

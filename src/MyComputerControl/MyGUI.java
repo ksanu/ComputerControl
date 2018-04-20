@@ -42,6 +42,7 @@ import java.util.List;
 
 public class MyGUI{
 
+    public static final String confFilePath = "./conf";
     public Stage primaryStage;
     public boolean wasStarted;
     public MyGUI(Stage primaryStage)
@@ -94,7 +95,7 @@ public class MyGUI{
             @Override
             public void handle(ActionEvent e) {
                 String currentPw = pwBox.getText();
-                String filePath = "./conf";
+                String filePath = confFilePath;
                 Charset utf8 = StandardCharsets.UTF_8;
                 try {
                     //Sprawdzenie, czy hasło się zgadza:
@@ -184,7 +185,7 @@ public class MyGUI{
                 //zmiana hasła
                 String oldPw = oldPwBox.getText();
                 String newPw = newPwBox.getText();
-                String filePath = "./conf";
+                String filePath = confFilePath;
                 Charset utf8 = StandardCharsets.UTF_8;
                 try {
                     List<String> allLines = Files.readAllLines(Paths.get(filePath), utf8);
