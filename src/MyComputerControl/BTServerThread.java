@@ -1,5 +1,8 @@
 package MyComputerControl;
 
+import MyComputerControl.Security.AESEncryptor;
+import MyComputerControl.Security.PasswordHandler;
+import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 
 import javax.bluetooth.DiscoveryAgent;
@@ -13,6 +16,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BTServerThread implements Runnable {
@@ -23,6 +28,8 @@ public class BTServerThread implements Runnable {
     StreamConnectionNotifier myStreamConnecrionNotifier = null;
     Integer btState;
     boolean btLoopRunning = true;
+    String encodedPwHash = null;
+
     public BTServerThread(TextArea textArea)
     {
         this.infoText = textArea;
@@ -31,8 +38,24 @@ public class BTServerThread implements Runnable {
 
     public void sendInfo(String info)
     {
-        String oldtext = infoText.getText();
-        infoText.setText(oldtext + "\n" + info);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                String oldtext = infoText.getText();
+                String[] allLines = oldtext.split("\\n");
+                if(allLines.length + 1 > 25) {
+                    String newText = "";
+                    for(int index = allLines.length - 25; index < allLines.length; index++)
+                    {
+                        newText += allLines[index] + "\n";
+                    }
+                    infoText.setText(newText);
+                }else
+                infoText.setText(oldtext + "\n" + info + "\n");
+                infoText.positionCaret(infoText.getText().length());
+                infoText.selectPositionCaret(infoText.getText().length());
+            }
+        });
     }
     @Override
     public void run() {
@@ -41,7 +64,9 @@ public class BTServerThread implements Runnable {
 
     public void runServerLoop()
     {
-        while(btLoopRunning && this.btState != BTStates.btEND) {
+        String messageLine=null;
+        RemoteDevice device = null;
+        while(btLoopRunning && !this.btState.equals(BTStates.btEND)) {
             try {
                 //Uruchamianie servera bt
                 if(btState.equals(BTStates.btSetupForWaiting) && myStreamConnecrionNotifier == null) {
@@ -50,7 +75,6 @@ public class BTServerThread implements Runnable {
                     //Jeżeli server został uruchomiony- zmieniamy stan na oczekiwanie na połączenie
                     if(myStreamConnecrionNotifier != null) btState = BTStates.btWaitingForConnection;
                 }
-                RemoteDevice device = null;
                 if(btState.equals(BTStates.btWaitingForConnection)) {
                     sendInfo("Oczekiwanie na połączenie...");
                     device = waitForConnection(myStreamConnecrionNotifier);
@@ -68,13 +92,14 @@ public class BTServerThread implements Runnable {
                     //mamy połączenie ze zdalnym urządzeniem
                     try {
                         //mając IO streams możemy odbierać i wysyłać komunikaty:
-                        String messageLine = readLineFromRemote();
-                        System.out.println(messageLine);
-                        if(messageLine!=null) handleMessage(messageLine);
-                        else {
+                        messageLine = readLineFromRemote();
+                        //System.out.println(messageLine);
+                         if(messageLine!=null) {
+                             handleMessage(messageLine);
+                         }else{
+                             //BufferedReader.readline() == null przy zamknięciu socketa
                             sendInfo("...przerwano połączenie...");
                              btState = BTStates.btWaitingForConnection;
-
                         }
 
                     } catch (IOException e) {
@@ -142,8 +167,36 @@ public class BTServerThread implements Runnable {
         }
     }
 
-    public void handleMessage(String messageLine){
+    private String decryptMessageLine(String messageLine)
+    {
+        if(encodedPwHash==null)
+        {
+            try {
+                List<String> allLines = Files.readAllLines(Paths.get(MyGUI.confFilePath), StandardCharsets.UTF_8);
+                String stored = allLines.get(0);
+                String[] saltAndPass = stored.split("\\$");
+                encodedPwHash = saltAndPass[1];
+
+            }catch (IOException e)
+            {
+                sendInfo("Nie można odczytać pliku conf.");
+            }catch (Exception e)
+            {
+                sendInfo(e.getMessage());
+            }
+
+        }
+        return AESEncryptor.decrypt(encodedPwHash, messageLine);
+    }
+
+    private void handleMessage(String messageLine){
         String[] msgTypeAndContent = messageLine.split("\\t");
+        if(msgTypeAndContent[0].equals(MessageTypes.Client.GET_PASSWORD_SALT))
+        {
+            sendPasswordSalt();
+            return;
+        }
+        msgTypeAndContent = decryptMessageLine(messageLine).split("\\t");
         switch(msgTypeAndContent[0])
         {
             case MessageTypes.Client.GET_PASSWORD_SALT:
@@ -171,6 +224,7 @@ public class BTServerThread implements Runnable {
 
                 break;
             default:
+                sendMessage(MessageTypes.Server.AUTHORIZATION_RESULT, MessageContent.AUTHORIZATION_RESULT.FAILURE);
                 break;
         }
 
@@ -192,11 +246,42 @@ public class BTServerThread implements Runnable {
         String receivedLine = myBlueroothConnectionReader.readLine();
         return receivedLine;
     }
+
+    private String encryptMessageLine(String messageLine)
+    {
+        if(encodedPwHash==null)
+        {
+            try {
+                List<String> allLines = Files.readAllLines(Paths.get(MyGUI.confFilePath), StandardCharsets.UTF_8);
+                String stored = allLines.get(0);
+                String[] saltAndPass = stored.split("\\$");
+                encodedPwHash = saltAndPass[1];
+
+            }catch (IOException e)
+            {
+                sendInfo("Nie można odczytać pliku conf.");
+            }catch (Exception e)
+            {
+                sendInfo(e.getMessage());
+            }
+
+        }
+        return AESEncryptor.encrypt(encodedPwHash, messageLine);
+    }
+
     public void sendMessage(String messageType, String messageContent)
     {
-        String msgLine = messageType + "\t" + messageContent + "\n";
-        myBluetoorhConnectionWriter.write(msgLine);
-        myBluetoorhConnectionWriter.flush();
+        if(messageType.equals(MessageTypes.Server.PASSWORD_SALT)) {
+            String msgLine = messageType + "\t" + messageContent;
+            myBluetoorhConnectionWriter.write(msgLine + "\n");
+            myBluetoorhConnectionWriter.flush();
+        }else{
+            String msgLine = messageType + "\t" + messageContent;
+            String encryptedMsgLine = encryptMessageLine(msgLine);
+            myBluetoorhConnectionWriter.write(encryptedMsgLine + "\n");
+            myBluetoorhConnectionWriter.flush();
+        }
+
     }
 
 

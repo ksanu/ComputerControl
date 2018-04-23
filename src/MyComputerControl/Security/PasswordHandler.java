@@ -1,4 +1,4 @@
-package MyComputerControl;
+package MyComputerControl.Security;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -14,7 +14,7 @@ public class PasswordHandler {
     // also for an attacker.
     private static final int iterations = 20*1000;
     private static final int saltLen = 32;
-    private static final int desiredKeyLen = 256;
+    private static final int desiredKeyLen = 128;
 
     /** Computes a salted PBKDF2 hash of given plaintext password
      suitable for storing in a database.
