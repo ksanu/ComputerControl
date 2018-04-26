@@ -263,13 +263,11 @@ public class MyGUI{
 
             }
         });
-        //TODO:lista akcji, rozwijana, do wybrania
         Label cbLabel = new Label("Lista akcji:");
         grid.add(cbLabel, 0, 0);
         final ComboBox actionsList = new ComboBox(getActionsList());
         grid.add(actionsList,1, 0);
 
-        //TODO: Przycisk - uruchomienia akcji
         Button runActionBtn = new Button("Uruchom akcję");
         HBox hbRunActionBtn = new HBox(10);
         hbRunActionBtn.setAlignment(Pos.BOTTOM_RIGHT);
@@ -280,19 +278,17 @@ public class MyGUI{
 
             @Override
             public void handle(ActionEvent e) {
-                    //TODO:run action
                 String actionName = (String)actionsList.getValue();
                 if (actionName != null)
                 {
-                    ActionExecuter executer = new ActionExecuter();
                     try {
-                        executer.executeAction(actionName);
+                        ActionExecuter.executeAction(actionName);
                     } catch (AWTException e1) {
                         e1.printStackTrace();
                     } catch (IOException e1) {
                         e1.printStackTrace();
-                    } catch (InterruptedException e1) {
-
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
                     }
                 }else
                 {
@@ -340,7 +336,7 @@ public class MyGUI{
         hbNewRunAppBtn.setAlignment(Pos.BOTTOM_LEFT);
         hbNewRunAppBtn.getChildren().add(newRunAppBtn);
 
-        grid.add(hbNewRunAppBtn, 0, 2, 2, 1);
+        grid.add(hbNewRunAppBtn, 0, 2, 1, 1);
 
         newRunAppBtn.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -350,12 +346,13 @@ public class MyGUI{
 
             }
         });
+
         Button remoteBtn = new Button("Włącz tryb zdalny");
         HBox hbRemoteBtn = new HBox(10);
         hbRemoteBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbRemoteBtn.getChildren().add(remoteBtn);
 
-        grid.add(hbRemoteBtn, 2, 2, 2, 1);
+        grid.add(hbRemoteBtn, 2, 2, 1, 1);
 
         remoteBtn.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -371,7 +368,7 @@ public class MyGUI{
         hbChangePwBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbChangePwBtn.getChildren().add(changePwBtn);
 
-        grid.add(hbChangePwBtn, 0, 2, 2, 1);
+        grid.add(hbChangePwBtn, 1, 2, 1, 1);
 
         changePwBtn.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -518,11 +515,11 @@ public class MyGUI{
         grid.add(scenetitle, 0, 0, 2, 1);
 
         Label LabelIgnoreMouseMove = new Label("Ignoruj ruchy myszy:");
-        grid.add(LabelIgnoreMouseMove, 0, 4);
+        grid.add(LabelIgnoreMouseMove, 0, 4, 1, 1);
 
         CheckBox cbIgnoreMouseMove = new CheckBox();
         cbIgnoreMouseMove.setSelected(false);
-        grid.add(cbIgnoreMouseMove,1, 4);
+        grid.add(cbIgnoreMouseMove,1, 4, 1, 1);
         /*
         // Register an event handler for a single node and a specific event type
         grid.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -554,7 +551,7 @@ public class MyGUI{
         HBox hbReturnBtn = new HBox(10);
         hbReturnBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbReturnBtn.getChildren().add(returnBtn);
-        grid.add(hbReturnBtn, 1, 4);
+        grid.add(hbReturnBtn, 2, 4);
 
         returnBtn.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -584,7 +581,6 @@ public class MyGUI{
 
             @Override
             public void handle(ActionEvent e) {
-                //todo: rozpocznij łapanie ruchu myszy
                 String actionName = actionNameField.getText();
                 ObservableList<String> allActions = getActionsList();
 
@@ -623,7 +619,6 @@ public class MyGUI{
 
             @Override
             public void handle(ActionEvent e) {
-                //todo: zapisz złapany ruch myszy i przejdź do sceny głównej
 
             }
 
@@ -634,13 +629,12 @@ public class MyGUI{
         HBox hbCancelBtn = new HBox(10);
         hbCancelBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbCancelBtn.getChildren().add(cancelBtn);
-        grid.add(hbCancelBtn, 1, 3);
+        grid.add(hbCancelBtn, 2, 3);
 
         cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent e) {
-                //todo: cancel thread and delete file, unhook listener
                 if(wasStarted)
                 {
                     try {

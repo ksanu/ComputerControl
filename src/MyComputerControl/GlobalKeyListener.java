@@ -36,7 +36,7 @@ public class GlobalKeyListener implements NativeKeyListener{
             List<String> lines = Arrays.asList("KEYPRESSED\t" + e.getRawCode());
 
             try {
-                Files.write(Paths.get(filePath), lines, utf8,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                Files.write(Paths.get(filePath), lines, utf8,StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
