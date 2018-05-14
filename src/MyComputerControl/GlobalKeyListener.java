@@ -5,14 +5,13 @@ import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
+import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.*;
+import java.io.*;
 
 
 public class GlobalKeyListener implements NativeKeyListener{
@@ -36,10 +35,16 @@ public class GlobalKeyListener implements NativeKeyListener{
             List<String> lines = Arrays.asList("KEYPRESSED\t" + e.getRawCode());
 
             try {
-                Files.write(Paths.get(filePath), lines, utf8,StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                Files.write(Paths.get(filePath), lines, utf8,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
+            //try (OutputStream out = new BufferedOutputStream(
+            //        Files.newOutputStream(Paths.get(filePath), CREATE, TRUNCATE_EXISTING))) {
+            //    ;
+            //} catch (IOException x) {
+            //    System.err.println(x);
+            //}
         }
     }
 

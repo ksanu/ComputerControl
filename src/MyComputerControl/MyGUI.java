@@ -498,7 +498,7 @@ public class MyGUI{
 
     public void newActionCaptureStage()
     {
-        final Thread[] captureThread = {null};
+        final ActionCapturer[] actionCapturer = {null};
         wasStarted = false;
         //JIntellitype.getInstance().registerHotKey(1, 0 ,122);//123 - F11
         //JIntellitype.getInstance().registerHotKey(2, 0, 27);//27 - Esc
@@ -562,6 +562,7 @@ public class MyGUI{
                 {
                     try {
                         GlobalScreen.unregisterNativeHook();
+                        actionCapturer[0].stopListening();
                     } catch (NativeHookException e1) {
                         e1.printStackTrace();
                     }
@@ -598,8 +599,8 @@ public class MyGUI{
                     wasStarted = true;
 
                     boolean ignoreMouseMove = cbIgnoreMouseMove.isSelected();
-                    captureThread[0] = new Thread(new ActionCapturer(actionName, ignoreMouseMove));
-                    captureThread[0].start();
+                    actionCapturer[0] = new ActionCapturer(actionName, ignoreMouseMove);
+                    new Thread(actionCapturer[0]).start();
                     startBtn.setDisable(true);
                 }
                 //primaryStage.setIconified(true);
@@ -639,13 +640,12 @@ public class MyGUI{
                 {
                     try {
                         GlobalScreen.unregisterNativeHook();
+                        actionCapturer[0].stopListening();
                     } catch (NativeHookException e1) {
                         e1.printStackTrace();
                     }
                     try {
                         Files.delete(Paths.get("./Akcje/" + actionNameField.getText()));
-                        captureThread[0].stop();
-                        captureThread[0] = null;
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }

@@ -8,6 +8,8 @@ import java.io.IOException;
 public class ActionCapturer implements Runnable {
     String filePath;
     boolean ignoreMouseMove;
+    GlobalMouseListener myMouseListener = null;
+    GlobalKeyListener myKeyListener = null;
     @Override
     public void run() {
 
@@ -34,15 +36,21 @@ public class ActionCapturer implements Runnable {
             System.exit(1);
         }
 
-        GlobalMouseListener myMouseListener = new GlobalMouseListener(this.filePath);
+        myMouseListener = new GlobalMouseListener(this.filePath);
 
         // Add the appropriate listeners.
         GlobalScreen.addNativeMouseListener(myMouseListener);
         if(ignoreMouseMove == false) GlobalScreen.addNativeMouseMotionListener(myMouseListener);
 
 
-        GlobalScreen.addNativeKeyListener(new GlobalKeyListener(this.filePath));
-
+        myKeyListener = new GlobalKeyListener(this.filePath);
+        GlobalScreen.addNativeKeyListener(myKeyListener);
+    }
+    public void stopListening()
+    {
+        GlobalScreen.removeNativeKeyListener(myKeyListener);
+        GlobalScreen.removeNativeMouseListener(myMouseListener);
+        GlobalScreen.removeNativeMouseMotionListener(myMouseListener);
     }
 
 }
