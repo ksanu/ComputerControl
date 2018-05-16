@@ -21,6 +21,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.control.TextArea;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -37,18 +38,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MyGUI{
+class MyGUI{
 
-    public static final String confFilePath = "./conf";
-    public Stage primaryStage;
-    public boolean wasStarted;
-    public MyGUI(Stage primaryStage)
+    static final String confFilePath = "./conf";
+    private Stage primaryStage;
+    private boolean wasStarted;
+    MyGUI(Stage primaryStage)
     {
        this.primaryStage = primaryStage;
        this.wasStarted = false;
     }
 
-       public void loginStage()
+       void loginStage()
     {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -81,38 +82,32 @@ public class MyGUI{
         final Text actiontarget = new Text();
         grid.add(actiontarget, 1, 6);
 
-        btn.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                actiontarget.setFill(Color.GREEN);
-                actiontarget.setText("Logowanie...");
-            }
+        btn.setOnMousePressed(event -> {
+            actiontarget.setFill(Color.GREEN);
+            actiontarget.setText("Logowanie...");
         });
-        btn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                String currentPw = pwBox.getText();
-                String filePath = confFilePath;
-                Charset utf8 = StandardCharsets.UTF_8;
-                try {
-                    //Sprawdzenie, czy hasło się zgadza:
-                    List<String> allLines = Files.readAllLines(Paths.get(filePath), utf8);
-                    String storedPw = allLines.get(0);
-                    if(PasswordHandler.check(currentPw, storedPw))
-                    {
-                        mainStage();
-                    }else{
-                        actiontarget.setFill(Color.RED);
-                        actiontarget.setText("Nieprawidłowe hasło.");
-                    }
-                }catch (Exception exc)
+        btn.setOnAction(e -> {
+            String currentPw = pwBox.getText();
+            String filePath = confFilePath;
+            Charset utf8 = StandardCharsets.UTF_8;
+            try {
+                //Sprawdzenie, czy hasło się zgadza:
+                List<String> allLines = Files.readAllLines(Paths.get(filePath), utf8);
+                String storedPw = allLines.get(0);
+                if(PasswordHandler.check(currentPw, storedPw))
                 {
-                    exc.printStackTrace();
+                    mainStage();
+                }else{
                     actiontarget.setFill(Color.RED);
-                    actiontarget.setText(exc.getMessage());
+                    actiontarget.setText("Nieprawidłowe hasło.");
                 }
-
+            }catch (Exception exc)
+            {
+                exc.printStackTrace();
+                actiontarget.setFill(Color.RED);
+                actiontarget.setText(exc.getMessage());
             }
+
         });
 
         Scene scene = new Scene(grid, 450, 275);
@@ -120,7 +115,7 @@ public class MyGUI{
         primaryStage.show();
     }
 
-    public void changePasswordStage()
+    private void changePasswordStage()
     {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -161,57 +156,48 @@ public class MyGUI{
         hbCancelBtn.setAlignment(Pos.BOTTOM_LEFT);
         hbCancelBtn.getChildren().add(cancelBtn);
         grid.add(hbCancelBtn, 0, 5);
-        cancelBtn.setOnAction(event -> {
-            mainStage();
-        });
+        cancelBtn.setOnAction(event -> mainStage());
         
         final Text actiontarget = new Text();
         grid.add(actiontarget, 1, 6);
 
-        btn.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                actiontarget.setFill(Color.GREEN);
-                actiontarget.setText("Zmiana hasła...");
-            }
+        btn.setOnMousePressed(event -> {
+            actiontarget.setFill(Color.GREEN);
+            actiontarget.setText("Zmiana hasła...");
         });
-        btn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                //zmiana hasła
-                String oldPw = oldPwBox.getText();
-                String newPw = newPwBox.getText();
-                String filePath = confFilePath;
-                Charset utf8 = StandardCharsets.UTF_8;
-                try {
-                    List<String> allLines = Files.readAllLines(Paths.get(filePath), utf8);
-                    String storedPw = allLines.get(0);
-                    //Sprawdzenie, czy stare hasło się zgadza:
-                    if(PasswordHandler.check(oldPw, storedPw)){
-                        String hashedNewPassword = PasswordHandler.getSaltedHash(newPw);
-                        //usunięcie białych znaków
-                        hashedNewPassword = hashedNewPassword.replaceAll("\\s+","");
-                        List<String> lines = Arrays.asList(hashedNewPassword);
-                        //zapisanie zhaszowanego hasła
-                        Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                        mainStage();
-                    }else {
-                        actiontarget.setFill(Color.RED);
-                        actiontarget.setText("Poprzednie hasło jest błędne.");
-                    }
-
-
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }catch (Exception ex)
-                {
-                    ex.printStackTrace();
+        btn.setOnAction(e -> {
+            //zmiana hasła
+            String oldPw1 = oldPwBox.getText();
+            String newPw1 = newPwBox.getText();
+            String filePath = confFilePath;
+            Charset utf8 = StandardCharsets.UTF_8;
+            try {
+                List<String> allLines = Files.readAllLines(Paths.get(filePath), utf8);
+                String storedPw = allLines.get(0);
+                //Sprawdzenie, czy stare hasło się zgadza:
+                if(PasswordHandler.check(oldPw1, storedPw)){
+                    String hashedNewPassword = PasswordHandler.getSaltedHash(newPw1);
+                    //usunięcie białych znaków
+                    hashedNewPassword = hashedNewPassword.replaceAll("\\s+","");
+                    List<String> lines = Arrays.asList(hashedNewPassword);
+                    //zapisanie zhaszowanego hasła
+                    Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    mainStage();
+                }else {
                     actiontarget.setFill(Color.RED);
-                    actiontarget.setText(ex.getMessage());
+                    actiontarget.setText("Poprzednie hasło jest błędne.");
                 }
 
+
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }catch (Exception ex)
+            {
+                ex.printStackTrace();
+                actiontarget.setFill(Color.RED);
+                actiontarget.setText(ex.getMessage());
             }
+
         });
 
         Scene scene = new Scene(grid, 450, 275);
@@ -227,16 +213,17 @@ public class MyGUI{
 
         File[] files = new File("./Akcje").listFiles();
 
-        for (File file : files) {
-            if (file.isFile()) {
-                results.add(file.getName());
+        if(files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    results.add(file.getName());
+                }
             }
         }
-        ObservableList<String> options = FXCollections.observableArrayList(results);
-        return options;
+        return FXCollections.observableArrayList(results);
     }
 
-    public void mainStage()
+    private void mainStage()
     {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -254,15 +241,8 @@ public class MyGUI{
         hbNewActionCaptureBtn.getChildren().add(newActionCaptureBtn);
 
         grid.add(hbNewActionCaptureBtn, 0, 1, 2, 1);
+        newActionCaptureBtn.setOnAction(e -> newActionCaptureStage());
 
-        newActionCaptureBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                newActionCaptureStage();
-
-            }
-        });
         Label cbLabel = new Label("Lista akcji:");
         grid.add(cbLabel, 0, 0);
         final ComboBox actionsList = new ComboBox(getActionsList());
@@ -274,29 +254,25 @@ public class MyGUI{
         hbRunActionBtn.getChildren().add(runActionBtn);
         grid.add(hbRunActionBtn, 2, 0);
 
-        runActionBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                String actionName = (String)actionsList.getValue();
-                if (actionName != null)
-                {
-                    try {
-                        ActionExecuter.executeAction(actionName);
-                    } catch (AWTException e1) {
-                        e1.printStackTrace();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                }else
-                {
-                    infoText.setText("Nie można uruchomić");
-                    infoText.setFill(Color.DARKGREEN);
+        runActionBtn.setOnAction(e -> {
+            String actionName = (String)actionsList.getValue();
+            if (actionName != null)
+            {
+                try {
+                    ActionExecuter.executeAction(actionName);
+                } catch (AWTException e1) {
+                    e1.printStackTrace();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
                 }
-
+            }else
+            {
+                infoText.setText("Nie można uruchomić");
+                infoText.setFill(Color.DARKGREEN);
             }
+
         });
 
         Button deleteActionBtn = new Button("Usuń akcję");
@@ -305,30 +281,25 @@ public class MyGUI{
         hbdeleteActionBtn.getChildren().add(deleteActionBtn);
         grid.add(hbdeleteActionBtn, 2, 1);
 
-        deleteActionBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                //TODO:run action
-                String actionName = (String)actionsList.getValue();
-                if (actionName != null)
-                {
-                    //Usuń plik:
-                    try {
-                        Files.delete(Paths.get("./Akcje/" + actionName));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                    actionsList.getItems().remove(actionName);
-                    infoText.setText("Usunięto akcję");
-                    infoText.setFill(Color.DARKGREEN);
-                }else
-                {
-                    infoText.setText("Nie można usunąć!");
-                    infoText.setFill(Color.DARKRED);
+        deleteActionBtn.setOnAction(e -> {
+            String actionName = (String)actionsList.getValue();
+            if (actionName != null)
+            {
+                //Usuń plik:
+                try {
+                    Files.delete(Paths.get("./Akcje/" + actionName));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
-
+                actionsList.getItems().remove(actionName);
+                infoText.setText("Usunięto akcję");
+                infoText.setFill(Color.DARKGREEN);
+            }else
+            {
+                infoText.setText("Nie można usunąć!");
+                infoText.setFill(Color.DARKRED);
             }
+
         });
 
         Button newRunAppBtn = new Button("Dodaj uruchamianie aplikacji");
@@ -354,14 +325,7 @@ public class MyGUI{
 
         grid.add(hbRemoteBtn, 2, 2, 1, 1);
 
-        remoteBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                remoteConnectionStage();
-
-            }
-        });
+        remoteBtn.setOnAction(e -> remoteConnectionStage());
 
         Button changePwBtn = new Button("Zmień hasło");
         HBox hbChangePwBtn = new HBox(10);
@@ -370,13 +334,7 @@ public class MyGUI{
 
         grid.add(hbChangePwBtn, 1, 2, 1, 1);
 
-        changePwBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                changePasswordStage();
-            }
-        });
+        changePwBtn.setOnAction(e -> changePasswordStage());
         //Label userName = new Label("User Name:");
         //grid.add(userName, 0, 1);
 
@@ -409,6 +367,7 @@ public class MyGUI{
         grid.add(appPath, 0, 2);
 
         TextField appPathField = new TextField();
+        appPathField.setDisable(true);
         grid.add(appPathField, 1, 2);
 
         final Text infoSaveText = new Text();
@@ -421,59 +380,69 @@ public class MyGUI{
         hbsaveAppBtn.getChildren().add(saveAppBtn);
         grid.add(hbsaveAppBtn, 0, 3);
 
-        saveAppBtn.setOnAction(new EventHandler<ActionEvent>() {
+        saveAppBtn.setOnAction(e -> {
+            String appName1 = appNameField.getText();
+            String appPath1 = appPathField.getText();
+            String filePath = "./Akcje/" + appName1;
 
-            @Override
-            public void handle(ActionEvent e) {
-                String appName = appNameField.getText();
-                String appPath = appPathField.getText();
-                String filePath = "./Akcje/" + appName;
+            ObservableList<String> allActions = getActionsList();
+            if(allActions.contains(appName1))
+            {
+                infoSaveText.setText("Ta nazwa już istnieje!");
+                infoSaveText.setFill(Color.DARKRED);
+            }else {
+                Charset utf8 = StandardCharsets.UTF_8;
+                List<String> lines = Arrays.asList("RUNAPP" + "\t" + appPath1);
 
-                ObservableList<String> allActions = getActionsList();
-                if(allActions.contains(appName))
-                {
-                    infoSaveText.setText("Ta nazwa już istnieje!");
-                    infoSaveText.setFill(Color.DARKRED);
-                }else {
-                    Charset utf8 = StandardCharsets.UTF_8;
-                    List<String> lines = Arrays.asList("RUNAPP " + appPath);
-
-                    try {
-                        Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-
-                    mainStage();
+                try {
+                    Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
+
+                mainStage();
             }
         });
 
-        appPathField.setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if(appPathField.getText().length() > 0)
-                {
-                    saveAppBtn.setDisable(false);
-                }else
-                {
-                    saveAppBtn.setDisable(true);
-                }
+        appPathField.setOnKeyReleased(event -> {
+            if(appPathField.getText().length() > 0 && appNameField.getText().length() > 0)
+            {
+                saveAppBtn.setDisable(false);
+            }else
+            {
+                saveAppBtn.setDisable(true);
             }
         });
 
-        appNameField.setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if(appNameField.getText().length() > 0)
-                {
-                    saveAppBtn.setDisable(false);
-                }else
-                {
-                    saveAppBtn.setDisable(true);
-                }
+        appNameField.setOnKeyReleased(event -> {
+            if(appNameField.getText().length() > 0 && appPathField.getText().length() > 0)
+            {
+                saveAppBtn.setDisable(false);
+            }else
+            {
+                saveAppBtn.setDisable(true);
             }
         });
+        Button chooseFileBtn = new Button("...");
+        HBox hbChooseFileBtn = new HBox(10);
+        hbChooseFileBtn.setAlignment(Pos.BOTTOM_RIGHT);
+        hbChooseFileBtn.getChildren().add(chooseFileBtn);
+        grid.add(hbChooseFileBtn, 2, 2);
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Wybierz plik");
+
+        chooseFileBtn.setOnAction(event -> {
+            File file = fileChooser.showOpenDialog(primaryStage);
+            if(file != null)
+            {
+                appPathField.setText(file.getAbsolutePath());
+                appPathField.setDisable(false);
+                saveAppBtn.setDisable(false);
+            }
+
+        });
+
 
         Button cancelBtn = new Button("Anuluj");
         HBox hbCancelBtn = new HBox(10);
@@ -481,13 +450,7 @@ public class MyGUI{
         hbCancelBtn.getChildren().add(cancelBtn);
         grid.add(hbCancelBtn, 1, 3);
 
-        cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                mainStage();
-            }
-        });
+        cancelBtn.setOnAction(e -> mainStage());
 
         Scene scene = new Scene(grid, 450, 275);
         primaryStage.setScene(scene);
@@ -496,7 +459,7 @@ public class MyGUI{
     }
 
 
-    public void newActionCaptureStage()
+    private void newActionCaptureStage()
     {
         final ActionCapturer[] actionCapturer = {null};
         wasStarted = false;
@@ -553,23 +516,19 @@ public class MyGUI{
         hbReturnBtn.getChildren().add(returnBtn);
         grid.add(hbReturnBtn, 2, 4);
 
-        returnBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                //unhook:
-                if(wasStarted)
-                {
-                    try {
-                        GlobalScreen.unregisterNativeHook();
-                        actionCapturer[0].stopListening();
-                    } catch (NativeHookException e1) {
-                        e1.printStackTrace();
-                    }
+        returnBtn.setOnAction(e -> {
+            //unhook:
+            if(wasStarted)
+            {
+                try {
+                    GlobalScreen.unregisterNativeHook();
+                    actionCapturer[0].stopListening();
+                } catch (NativeHookException e1) {
+                    e1.printStackTrace();
                 }
-
-                mainStage();
             }
+
+            mainStage();
         });
 
         Button startBtn = new Button("Start");
@@ -578,34 +537,30 @@ public class MyGUI{
         hbStartBtn.getChildren().add(startBtn);
         grid.add(hbStartBtn, 0, 3);
 
-        startBtn.setOnAction(new EventHandler<ActionEvent>() {
+        startBtn.setOnAction(e -> {
+            String actionName1 = actionNameField.getText();
+            ObservableList<String> allActions = getActionsList();
 
-            @Override
-            public void handle(ActionEvent e) {
-                String actionName = actionNameField.getText();
-                ObservableList<String> allActions = getActionsList();
-
-                if(allActions.contains(actionName))
-                {
-                    infoSaveText.setText("Ta nazwa już istnieje!");
-                    infoSaveText.setFill(Color.DARKRED);
-                }
-                else{
-                    infoSaveText.setText("Wciśnij klawisz Esc, aby zapisać.\nNastępnie powróć.");
-                    infoSaveText.setFill(Color.DARKGREEN);
-
-                    actionNameField.setEditable(false);
-                    returnBtn.setDisable(false);
-                    wasStarted = true;
-
-                    boolean ignoreMouseMove = cbIgnoreMouseMove.isSelected();
-                    actionCapturer[0] = new ActionCapturer(actionName, ignoreMouseMove);
-                    new Thread(actionCapturer[0]).start();
-                    startBtn.setDisable(true);
-                }
-                //primaryStage.setIconified(true);
-
+            if(allActions.contains(actionName1))
+            {
+                infoSaveText.setText("Ta nazwa już istnieje!");
+                infoSaveText.setFill(Color.DARKRED);
             }
+            else{
+                infoSaveText.setText("Wciśnij klawisz Esc, aby zapisać.\nNastępnie powróć.");
+                infoSaveText.setFill(Color.DARKGREEN);
+
+                actionNameField.setEditable(false);
+                returnBtn.setDisable(false);
+                wasStarted = true;
+
+                boolean ignoreMouseMove = cbIgnoreMouseMove.isSelected();
+                actionCapturer[0] = new ActionCapturer(actionName1, ignoreMouseMove);
+                new Thread(actionCapturer[0]).start();
+                startBtn.setDisable(true);
+            }
+            //primaryStage.setIconified(true);
+
         });
 
 
@@ -632,33 +587,29 @@ public class MyGUI{
         hbCancelBtn.getChildren().add(cancelBtn);
         grid.add(hbCancelBtn, 2, 3);
 
-        cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                if(wasStarted)
-                {
-                    try {
-                        GlobalScreen.unregisterNativeHook();
-                        actionCapturer[0].stopListening();
-                    } catch (NativeHookException e1) {
-                        e1.printStackTrace();
-                    }
-                    try {
-                        Files.delete(Paths.get("./Akcje/" + actionNameField.getText()));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                    catch (Exception ex){
-                        ex.printStackTrace();
-                    };
+        cancelBtn.setOnAction(e -> {
+            if(wasStarted)
+            {
+                try {
+                    GlobalScreen.unregisterNativeHook();
+                    actionCapturer[0].stopListening();
+                } catch (NativeHookException e1) {
+                    e1.printStackTrace();
                 }
-
-
-
-                mainStage();
-
+                try {
+                    Files.delete(Paths.get("./Akcje/" + actionNameField.getText()));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                catch (Exception ex){
+                    ex.printStackTrace();
+                };
             }
+
+
+
+            mainStage();
+
         });
 
         //JIntellitype.getInstance().unregisterHotKey(1);
@@ -677,7 +628,7 @@ public class MyGUI{
 
     }
 
-    public void remoteConnectionStage() {
+    private void remoteConnectionStage() {
 
 
         GridPane grid = new GridPane();
@@ -703,14 +654,10 @@ public class MyGUI{
         hbRunRemoteBtn.setMinWidth(150);
         grid.add(hbRunRemoteBtn, 2, 1);
 
-        runRemoteBtn.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent e) {
-                //Uruchomienie servera, server będzie komunikował się z pilotem i delegował uruchamianie akcji itd.
-                myServer.startServer();
-                runRemoteBtn.setDisable(true);
-            }
+        runRemoteBtn.setOnAction(e -> {
+            //Uruchomienie servera, server będzie komunikował się z pilotem i delegował uruchamianie akcji itd.
+            myServer.startServer();
+            runRemoteBtn.setDisable(true);
         });
 
         Button cancelBtn = new Button("Anuluj");
@@ -720,19 +667,15 @@ public class MyGUI{
         hbCancelBtn.setMinWidth(150);
         grid.add(hbCancelBtn, 4, 1);
 
-        cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
+        cancelBtn.setOnAction(e -> {
+            //Uruchomienie servera, server będzie komunikował się z pilotem i delegował uruchamianie akcji itd.
+            try {
+                myServer.stopServer();
 
-            @Override
-            public void handle(ActionEvent e) {
-                //Uruchomienie servera, server będzie komunikował się z pilotem i delegował uruchamianie akcji itd.
-                try {
-                    myServer.stopServer();
-
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                mainStage();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
+            mainStage();
         });
 
         Scene scene = new Scene(grid, 450, 275);
