@@ -1,5 +1,7 @@
-package MyComputerControl;
+package MyComputerControl.BTServer;
 
+import MyComputerControl.Actions.ActionExecuter;
+import MyComputerControl.MyGUI;
 import MyComputerControl.Security.AESEncryptor;
 import MyComputerControl.Security.PasswordHandler;
 import javafx.application.Platform;
@@ -17,8 +19,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class BTServerThread implements Runnable {
@@ -289,14 +289,14 @@ public class BTServerThread implements Runnable {
         btLoopRunning = false;
     }
 
-    public void openIOStreams() throws IOException {
+    private void openIOStreams() throws IOException {
         InputStream inStream = myBlueroothConnection.openInputStream();
         this.myBlueroothConnectionReader = new BufferedReader(new InputStreamReader(inStream));
 
         OutputStream outStream = myBlueroothConnection.openOutputStream();
         myBluetoorhConnectionWriter = new PrintWriter(new OutputStreamWriter(outStream));
     }
-    public String readLineFromRemote() throws IOException {
+    private String readLineFromRemote() throws IOException {
         String receivedLine = myBlueroothConnectionReader.readLine();
         return receivedLine;
     }
@@ -323,7 +323,7 @@ public class BTServerThread implements Runnable {
         return AESEncryptor.encrypt(encodedPwHash, messageLine);
     }
 
-    public void sendMessage(String messageType, String messageContent)
+    private void sendMessage(String messageType, String messageContent)
     {
         if(messageType.equals(MessageTypes.Server.PASSWORD_SALT)) {
             String msgLine = messageType + "\t" + messageContent;
@@ -349,12 +349,12 @@ public class BTServerThread implements Runnable {
      */
     private StreamConnectionNotifier setupServerForWaiting()
     {
-        // retrieve the local Bluetooth device object
         LocalDevice local = null;
 
         StreamConnectionNotifier notifier = null;
 
         try {
+            // retrieve the local Bluetooth device object
             local = LocalDevice.getLocalDevice();
             int currentDiscoverableMode = local.getDiscoverable();
             //ustawienie trybu widoczności urządzenia. GIAC - General/Unlimited Inquiry Access Code
@@ -367,7 +367,6 @@ public class BTServerThread implements Runnable {
 
             String url = "btspp://localhost:" + uuid.toString() + ";name=RemoteBluetooth";
             notifier = (StreamConnectionNotifier) Connector.open(url);
-            System.out.println(uuid.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -379,7 +378,7 @@ public class BTServerThread implements Runnable {
     /**
      * Czekanie na połączenie z urządzeniami
      **/
-    public RemoteDevice waitForConnection(StreamConnectionNotifier notifier)
+    private RemoteDevice waitForConnection(StreamConnectionNotifier notifier)
     {
         // waiting for connection
         RemoteDevice device = null;

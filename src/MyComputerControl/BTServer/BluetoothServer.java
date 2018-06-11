@@ -1,18 +1,14 @@
-package MyComputerControl;
+package MyComputerControl.BTServer;
 
 import javafx.scene.control.TextArea;
 
-import javax.bluetooth.*;
-import javax.microedition.io.Connector;
-import javax.microedition.io.StreamConnection;
-import javax.microedition.io.StreamConnectionNotifier;
 import java.io.*;
 
 public class BluetoothServer {
 
-    TextArea infoText;
-    Thread myServerThread = null;
-    BTServerThread myServerInstance = null;
+    private TextArea infoText;
+    private Thread myServerThread = null;
+    private BTServerThread myServerInstance = null;
 
     public BluetoothServer(TextArea textArea)
     {

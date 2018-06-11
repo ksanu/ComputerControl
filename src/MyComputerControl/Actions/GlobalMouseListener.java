@@ -1,4 +1,4 @@
-package MyComputerControl;
+package MyComputerControl.Actions;
 
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
@@ -30,7 +30,7 @@ public class GlobalMouseListener implements NativeMouseInputListener {
     public void nativeMousePressed(NativeMouseEvent e) {
         System.out.println("Mouse Pressed: " + e.getButton());
         Charset utf8 = StandardCharsets.UTF_8;
-        List<String> lines = Arrays.asList("MOUSEPRESSED\t" + e.getButton());
+        List<String> lines = Arrays.asList("MOUSEMOVED\t" + e.getX() + "\t" + e.getY(), "MOUSEPRESSED\t" + e.getButton());
 
         try {
             Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -42,7 +42,7 @@ public class GlobalMouseListener implements NativeMouseInputListener {
     public void nativeMouseReleased(NativeMouseEvent e) {
         System.out.println("Mouse Released: " + e.getButton());
         Charset utf8 = StandardCharsets.UTF_8;
-        List<String> lines = Arrays.asList("MOUSERELEASED\t" + e.getButton());
+        List<String> lines = Arrays.asList("MOUSEMOVED\t" + e.getX() + "\t" + e.getY(), "MOUSERELEASED\t" + e.getButton());
 
         try {
             Files.write(Paths.get(filePath), lines, utf8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);

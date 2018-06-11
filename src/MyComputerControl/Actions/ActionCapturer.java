@@ -1,4 +1,4 @@
-package MyComputerControl;
+package MyComputerControl.Actions;
 
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;

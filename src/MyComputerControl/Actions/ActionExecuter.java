@@ -1,4 +1,4 @@
-package MyComputerControl;
+package MyComputerControl.Actions;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -24,7 +24,7 @@ public class ActionExecuter {
         return allLines;
     }
 
-    static void typeText(String text)
+    public static void typeText(String text)
     {
         StringSelection stringSelection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -41,7 +41,7 @@ public class ActionExecuter {
         robot.keyRelease(KeyEvent.VK_V);
         robot.keyRelease(KeyEvent.VK_CONTROL);
     }
-    static void executeAction(String actionName) throws AWTException, IOException, InterruptedException {
+    public static void executeAction(String actionName) throws AWTException, IOException, InterruptedException {
 
         List<String> actionLines = getActionLines("./Akcje/" + actionName);
 
@@ -49,14 +49,14 @@ public class ActionExecuter {
         {
             String[] elems = line.split("\\t");
             runSingleAction(elems);
-            TimeUnit.MILLISECONDS.sleep(5);
+            TimeUnit.MILLISECONDS.sleep(15);
 
 
         }
 
 
     }
-    static void mouseUp()
+    public static void mouseUp()
     {
         try {
             Robot r = new Robot();
@@ -68,7 +68,7 @@ public class ActionExecuter {
         }
 
     }
-    static void mouseDown()
+    public static void mouseDown()
     {
         try {
             Robot r = new Robot();
@@ -80,7 +80,7 @@ public class ActionExecuter {
 
     }
 
-    static void mouseLeft()
+    public static void mouseLeft()
     {
         try {
             Robot r = new Robot();
@@ -92,7 +92,7 @@ public class ActionExecuter {
 
     }
 
-    static void mouseRight()
+    public static void mouseRight()
     {
         try {
             Robot r = new Robot();
@@ -103,7 +103,7 @@ public class ActionExecuter {
         }
 
     }
-    static void runSingleAction(String[] args) throws AWTException {
+    public static void runSingleAction(String[] args) throws AWTException {
         Robot r = new Robot();
         int x = 0;
         int y = 0;

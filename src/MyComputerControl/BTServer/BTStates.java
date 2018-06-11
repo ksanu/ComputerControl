@@ -1,4 +1,4 @@
-package MyComputerControl;
+package MyComputerControl.BTServer;
 
 public class BTStates {
     static final Integer btEND = -1;

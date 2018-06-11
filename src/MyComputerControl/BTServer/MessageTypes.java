@@ -1,4 +1,4 @@
-package MyComputerControl;
+package MyComputerControl.BTServer;
 
 public interface MessageTypes {
 

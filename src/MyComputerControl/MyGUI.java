@@ -1,5 +1,8 @@
 package MyComputerControl;
 
+import MyComputerControl.Actions.ActionCapturer;
+import MyComputerControl.Actions.ActionExecuter;
+import MyComputerControl.BTServer.BluetoothServer;
 import MyComputerControl.Security.PasswordHandler;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,8 +15,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
@@ -38,9 +39,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class MyGUI{
+public class MyGUI{
 
-    static final String confFilePath = "./conf";
+    public static final String confFilePath = "./conf";
     private Stage primaryStage;
     private boolean wasStarted;
     MyGUI(Stage primaryStage)
@@ -49,7 +50,7 @@ class MyGUI{
        this.wasStarted = false;
     }
 
-       void loginStage()
+    void loginStage()
     {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -204,8 +205,6 @@ class MyGUI{
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-
-
 
     private ObservableList<String> getActionsList()
     {
@@ -509,7 +508,7 @@ class MyGUI{
         final Text infoSaveText = new Text();
         grid.add(infoSaveText, 0, 5);
 
-        Button returnBtn = new Button("Powrót");
+        Button returnBtn = new Button("Potwierdź");
         returnBtn.setDisable(true);
         HBox hbReturnBtn = new HBox(10);
         hbReturnBtn.setAlignment(Pos.BOTTOM_RIGHT);
@@ -547,7 +546,7 @@ class MyGUI{
                 infoSaveText.setFill(Color.DARKRED);
             }
             else{
-                infoSaveText.setText("Wciśnij klawisz Esc, aby zapisać.\nNastępnie powróć.");
+                infoSaveText.setText("Wciśnij klawisz Esc, aby zapisać.\nNastępnie potwierdź.");
                 infoSaveText.setFill(Color.DARKGREEN);
 
                 actionNameField.setEditable(false);
