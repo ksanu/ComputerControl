@@ -15,7 +15,7 @@ import java.io.*;
 
 
 public class GlobalKeyListener implements NativeKeyListener{
-    public String filePath;
+    private String filePath;
     GlobalKeyListener(String filePath) throws IOException {
         this.filePath = filePath;
 
@@ -32,7 +32,7 @@ public class GlobalKeyListener implements NativeKeyListener{
             }
         }else{
             Charset utf8 = StandardCharsets.UTF_8;
-            List<String> lines = Arrays.asList("KEYPRESSED\t" + e.getRawCode());
+            List<String> lines = Arrays.asList("KEYPRESSED\t" + NativeKeyEvent.getKeyText(e.getKeyCode()));
 
             try {
                 Files.write(Paths.get(filePath), lines, utf8,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -52,7 +52,7 @@ public class GlobalKeyListener implements NativeKeyListener{
         System.out.println("Key Released: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
         //System.out.println("Id: " + e.getID() + "\tModifier: " + e.getModifiers()+"raw: " + e.getRawCode());
         Charset utf8 = StandardCharsets.UTF_8;
-        List<String> lines = Arrays.asList("KEYRELEASED\t" + e.getRawCode());
+        List<String> lines = Arrays.asList("KEYRELEASED\t" + NativeKeyEvent.getKeyText(e.getKeyCode()));
         try {
             Files.write(Paths.get(filePath), lines, utf8,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e1) {
